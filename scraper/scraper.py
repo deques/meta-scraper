@@ -17,21 +17,16 @@ with requests.session() as s:
     giveaways = doc.body.find_all("div", class_="structItem--giveaway")
 
     for giveaway in giveaways:
-        print(giveaway['data-author'])
+        prizes = giveaway.find_all("span")
+        #print(giveaway['data-author'])
+        #print(prizes)
+
+        if len(prizes) == 2:
+            i = 1
+        else:
+            i = 0
+        
+        prize = prizes[i].text.strip()
+        print(giveaway['data-author'] + " - " + prize)
     #    giver = giveaway.find("div", class_="structItem-title")
     #    print(giver.text)
-
-""" 
-
-result = requests.get(url)
-doc = BeautifulSoup(result.text, "html.parser")
-giveaways = doc.body.find_all("div")
-
-print(giveaways)
-
-with open("index.html", "r") as f:
-    doc = BeautifulSoup(f, "html.parser")
-
-tag = doc.find_all("p")
-print(tag[0])
-"""
