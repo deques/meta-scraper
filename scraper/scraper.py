@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 import requests
 
 import config
+import mongodb
 
 login = "https://metacouncil.com/login/login/"
 url = "https://metacouncil.com/giveaway/"
@@ -31,16 +32,17 @@ with requests.session() as s:
 
         for giveaway in giveaways:
             prizes = giveaway.find_all("span")
-            #print(giveaway['data-author'])
-            #print(prizes)
+            # print(giveaway['data-author'])
+            # print(prizes)
 
             if len(prizes) == 2:
                 index = 1
             else:
                 index = 0
-            
+
             prize = prizes[index].text.strip()
-            print(giveaway['data-author'] + " - " + prize)
+            mongodb.insert(giveaway['data-author'], prize.split(" ")[0])
+#            print(giveaway['data-author'] + " - " + prize.split(" ")[0])
         i = i + 1
     #    giver = giveaway.find("div", class_="structItem-title")
     #    print(giver.text)
