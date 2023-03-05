@@ -17,4 +17,7 @@ app.use(express.json());
 
 const giveawaysRouter = require("./routes/giveaways");
 app.use("/giveaways", giveawaysRouter);
+
+const gamesRouter = require("./routes/games");
+app.use("/games", gamesRouter);
 app.listen(PORT, () => console.log("Server has started"));
