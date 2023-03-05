@@ -24,7 +24,8 @@ def insertUser(user, add):
 
     # Add new entry
     if count == 0:
-        count = users.insert_one({"name": user, "prizes": add, "times": 1})
+        count = users.insert_one(
+            {"name": user, "prizes": int(add), "times": 1})
     # Increase the number
     else:
         res = users.find_one({"name": user})
@@ -40,12 +41,12 @@ def insertUser(user, add):
             times = res["times"]
 
         numPrizes = users.update_one(
-            {"name": user}, {"$set": {"prizes": (int(prizes) + int(add)), "times": (times + 1)}})
+            {"name": user}, {"$set": {"prizes": int(int(prizes) + int(add)), "times": (times + 1)}})
 
 
 def process():
     entries = giveaways.find({})
-    print("Test")
+    print("Processing")
 
     for entry in entries:
         user = entry["name"]

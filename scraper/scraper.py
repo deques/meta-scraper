@@ -42,7 +42,6 @@ with requests.session() as s:
             prizes = giveaway.find(
                 "ul", class_="structItem-parts").find_all("li")[2].find("span")
             # print(giveaway['data-author'])
-            print(prizes)
 
             prize = prizes.text.strip()
             mongodb.insert(giveaway['data-author'],
