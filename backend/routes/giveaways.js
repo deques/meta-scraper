@@ -5,9 +5,10 @@ const Giveaway = require("../models/subscriber");
 // Getting all
 router.get("/", async (req, res) => {
   try {
-    const giveaways = await Giveaway.find({ name: "Satori" })
+    const giveaways = await Giveaway.find()
       .select("-_id")
-      .sort({ prizes: "desc" });
+      .sort({ prizes: "desc" })
+      .limit(25); // Remove this line to see all givers
     res.json(giveaways);
   } catch (err) {
     res.status(500).json({ message: err.message });

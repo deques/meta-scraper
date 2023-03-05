@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react'
 import BarChart from './components/chart';
-import { Data } from '../data';
 
 function App() {
-  const [data, setData] = useState([])
   const [chartData, setChartData] = useState([])
   const [loading, setLoading] = useState(true)
 
