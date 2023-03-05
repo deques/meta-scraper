@@ -11,9 +11,24 @@ credentials = {
     'password': config.password
 }
 
+
+def scrapeGiveaway(id):  # Get games from giveaway
+    givePage = s.get(url + str(id))
+    giveDoc = BeautifulSoup(givePage.text, "html.parser")
+    rows = giveDoc.body.find_all(
+        "tr", class_="dataList-row")[1:]
+
+    for row in rows:
+        cell = row.find("td")
+
+        game = cell.text.strip()
+        mongodb.insertGame(game)
+
+
 # Delete old stuff
 mongodb.delete()
 
+# Login
 with requests.session() as s:
     s.post(login, data=credentials)
     startPage = s.get(url)
@@ -26,6 +41,7 @@ with requests.session() as s:
     num = int(numPages[4].text.strip())
     i = 1
 
+    # num = 1  # temp variable, remove
     # Loop through all the pages
     while i <= num:
         givePage = s.get(url + "?page=" + str(i))
@@ -34,18 +50,24 @@ with requests.session() as s:
         giveaways = giveDoc.body.find_all("div", class_="structItem--giveaway")
 
         for giveaway in giveaways:
+            # Find link to the giveaway
             idLink = giveaway.find(
                 "div", class_="structItem-title").find("a")
-            x = str(idLink).split("/")
-            prizes = giveaway.find_all("span")
 
+            # Get the ID from the link
+            id = str(idLink).split("/")[2]
+            print(id)
+            scrapeGiveaway(id)
+
+            # Get the number of prizes
+            prizes = giveaway.find_all("span")
             prizes = giveaway.find(
                 "ul", class_="structItem-parts").find_all("li")[2].find("span")
             # print(giveaway['data-author'])
 
             prize = prizes.text.strip()
             mongodb.insert(giveaway['data-author'],
-                           prize.split(" ")[0], int(x[2]))
+                           prize.split(" ")[0], int(id))
         i = i + 1
 
 mongodb.process()

@@ -28,20 +28,42 @@ def insertUser(user, add):
             {"name": user, "prizes": int(add), "times": 1})
     # Increase the number
     else:
+        # Find the user
         res = users.find_one({"name": user})
 
         # Reset
         prizes = 0
         times = 0
 
+        # Get the number
         if res["prizes"] != "":
             prizes = res["prizes"]
 
         if res["times"] != "":
             times = res["times"]
 
+        # Update the entry
         numPrizes = users.update_one(
             {"name": user}, {"$set": {"prizes": int(int(prizes) + int(add)), "times": (times + 1)}})
+
+
+def insertGame(game):
+    games = db["games"]
+    count = games.count_documents({"name": game})
+
+    if int(count) == 0:
+        games.insert_one({"name": game, "times": 1})
+    else:
+        res = games.find_one({"name": game})
+
+        times = 0
+
+        if res["times"] != "":
+            times = res["times"]
+
+        # Update the entry
+        # games.update_one({"name": game}, {"$inc": {times: 1}})
+        games.update_one({"name": game}, {"$set": {"times": int(times) + 1}})
 
 
 def process():
@@ -58,3 +80,4 @@ def delete():
     print("Delete")
     giveaways.delete_many({})
     db["users"].delete_many({})
+    db["games"].delete_many({})
