@@ -8,8 +8,9 @@ db = client["MetaGiveaway"]
 giveaways = db["meta-giveaway"]
 
 
-def insert(giver, number):
-    giveaways.insert_one({"name": giver, "prizes": number})
+def insert(giver, number, giveawayID):
+    giveaways.insert_one(
+        {"name": giver, "prizes": number, "giveawayID": giveawayID})
 
 
 def insertUser(user, add):
@@ -44,6 +45,7 @@ def insertUser(user, add):
 
 def process():
     entries = giveaways.find({})
+    print("Test")
 
     for entry in entries:
         user = entry["name"]
@@ -51,7 +53,7 @@ def process():
         insertUser(user, prizes)
 
 
-# giveaways.delete_many({})
-
-db["users"].delete_many({})
-process()
+def delete():
+    print("Delete")
+    giveaways.delete_many({})
+    db["users"].delete_many({})

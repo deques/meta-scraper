@@ -11,6 +11,9 @@ credentials = {
     'password': config.password
 }
 
+# Delete old stuff
+mongodb.delete()
+
 with requests.session() as s:
     s.post(login, data=credentials)
     startPage = s.get(url)
@@ -31,18 +34,19 @@ with requests.session() as s:
         giveaways = giveDoc.body.find_all("div", class_="structItem--giveaway")
 
         for giveaway in giveaways:
+            idLink = giveaway.find(
+                "div", class_="structItem-title").find("a")
+            x = str(idLink).split("/")
             prizes = giveaway.find_all("span")
+
+            prizes = giveaway.find(
+                "ul", class_="structItem-parts").find_all("li")[2].find("span")
             # print(giveaway['data-author'])
-            # print(prizes)
+            print(prizes)
 
-            if len(prizes) == 2:
-                index = 1
-            else:
-                index = 0
-
-            prize = prizes[index].text.strip()
-            mongodb.insert(giveaway['data-author'], prize.split(" ")[0])
-#            print(giveaway['data-author'] + " - " + prize.split(" ")[0])
+            prize = prizes.text.strip()
+            mongodb.insert(giveaway['data-author'],
+                           prize.split(" ")[0], int(x[2]))
         i = i + 1
-    #    giver = giveaway.find("div", class_="structItem-title")
-    #    print(giver.text)
+
+mongodb.process()
