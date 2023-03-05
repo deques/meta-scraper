@@ -1,32 +1,45 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import './App.css'
+import { useEffect, useState } from 'react'
+import BarChart from './components/chart';
+import { Data } from '../data';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [data, setData] = useState([])
+  const [chartData, setChartData] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  const setDataset = (data) => {
+    setChartData({
+      labels: data.map((user) => user.name),
+      datasets: [
+        {
+          label: "Given prizes",
+          data: data.map((user) => user.prizes)
+        }
+      ]
+
+    })
+    setLoading(false)
+  }
+  const getData = async () => {
+    const response = await fetch(
+      "http://localhost:3000/giveaways/"
+    );
+    const json = await response.json();
+    setDataset(json)
+  };
+  
+  useEffect(()=> {
+    getData();
+  }, [])
 
   return (
     <div className="App">
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src="/vite.svg" className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <h2>Hello</h2>
+      {loading ? (
+        <h2>Loading</h2>
+      ) : (
+        <BarChart data={chartData} />
+      )}
     </div>
   )
 }
