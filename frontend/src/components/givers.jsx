@@ -2,7 +2,7 @@ import React from "react";
 import { Bar } from 'react-chartjs-2';
 import Chart from 'chart.js/auto';
 
-const BarChart = ({ data }) => {
+const Givers = ({ data }) => {
     const options = {
     responsive: true,
     plugins: {
@@ -11,7 +11,7 @@ const BarChart = ({ data }) => {
       },
       title: {
         display: true,
-        text: 'Chart.js Bar Chart',
+        text: 'Meta-Giveaway',
       },
     }
   };
@@ -19,7 +19,6 @@ const BarChart = ({ data }) => {
     <>
       <h1>Chart</h1>
       <div className="chart-container">
-        <h2 style={{textAlign: "center" }}>Bar chart</h2>
         <Bar data={data} options={options} />
       </div>
     
@@ -27,4 +26,4 @@ const BarChart = ({ data }) => {
   )
 }
 
-export default BarChart;
+export default Givers;

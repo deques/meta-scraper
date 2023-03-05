@@ -19,10 +19,11 @@ def scrapeGiveaway(id):  # Get games from giveaway
         "tr", class_="dataList-row")[1:]
 
     for row in rows:
-        cell = row.find("td")
+        cell = row.find_all("td")
 
-        game = cell.text.strip()
-        mongodb.insertGame(game)
+        game = cell[0].text.strip()
+        platform = cell[1].text.strip()
+        mongodb.insertGame(game, platform)
 
 
 # Delete old stuff
@@ -68,6 +69,8 @@ with requests.session() as s:
             prize = prizes.text.strip()
             mongodb.insert(giveaway['data-author'],
                            prize.split(" ")[0], int(id))
+
+            # break
         i = i + 1
 
 mongodb.process()

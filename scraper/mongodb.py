@@ -47,12 +47,13 @@ def insertUser(user, add):
             {"name": user}, {"$set": {"prizes": int(int(prizes) + int(add)), "times": (times + 1)}})
 
 
-def insertGame(game):
+def insertGame(game, platform):
+    game = game.lower()
     games = db["games"]
-    count = games.count_documents({"name": game})
+    count = games.count_documents({"name": game, "platform": platform})
 
     if int(count) == 0:
-        games.insert_one({"name": game, "times": 1})
+        games.insert_one({"name": game, "platform": platform, "times": 1})
     else:
         res = games.find_one({"name": game})
 

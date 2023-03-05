@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import BarChart from './components/chart';
+import Givers from './components/givers';
 
 function App() {
   const [chartData, setChartData] = useState([])
@@ -36,7 +36,7 @@ function App() {
       {loading ? (
         <h2>Loading</h2>
       ) : (
-        <BarChart data={chartData} />
+        <Givers data={chartData} />
       )}
     </div>
   )

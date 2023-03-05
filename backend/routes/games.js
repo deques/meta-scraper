@@ -5,7 +5,7 @@ const Games = require("../models/games");
 // Getting all
 router.get("/", async (req, res) => {
   try {
-    const games = await Games.find().select("-_id").sort({ name: "asc" });
+    const games = await Games.find().select("-_id").sort({ times: "desc" });
     //.limit(25); // Remove this line to see all givers
     res.json(games);
   } catch (err) {
