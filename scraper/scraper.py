@@ -4,8 +4,8 @@ import requests
 import config
 import mongodb
 
-DEBUG = True
-DEBUG_GIVEAWAYS = 2
+DEBUG = False
+DEBUG_GIVEAWAYS = 10
 
 login = "https://metacouncil.com/login/login/"
 url = "https://metacouncil.com/giveaway/"
@@ -15,6 +15,21 @@ credentials = {
     'login': config.login,
     'password': config.password
 }
+
+
+def getWinners(postID):
+    giveawayURL = postURL + postID
+    postPage = requests.get(giveawayURL)
+    postDoc = BeautifulSoup(postPage.text, "html.parser")
+    givenGames = postDoc.body.find(
+        "article", id="js-post-" + postID).find_all("li", class_="is-delivered")
+    for givenGame in givenGames:
+        list = givenGame.find_all("ul")
+        # Retrieve winner
+        game = list[0].find_all("li")[0]  # .find("a")
+        winner = list[0].find_all("li")[1].find("a").text.strip()
+
+        mongodb.insertWinner(winner)
 
 
 def scrapeGiveaway(id):  # Get games from giveaway
@@ -39,13 +54,7 @@ def scrapeGiveaway(id):  # Get games from giveaway
             "div", class_="p-title-pageAction").find_all("a")
         # Get Post id
         postID = link[0]["href"].split("/")[2]
-        giveawayURL = postURL + postID
-        postPage = s.get(giveawayURL)
-        postDoc = BeautifulSoup(postPage.text, "html.parser")
-        print(giveawayURL)
-        givePost = postDoc.body.find(
-            "article", id="js-post-" + postID).find("ul", class_="giveaway-bbCode--prizes")
-        print(givePost)
+        getWinners(postID)
 
 
 # Delete old stuff

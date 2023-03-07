@@ -8,6 +8,23 @@ db = client["MetaGiveaway"]
 giveaways = db["meta-giveaway"]
 
 
+def insertWinner(winner):
+    winners = db["winners"]
+    count = winners.count_documents({"name": winner})
+
+    if count == 0:
+        winners.insert_one({"name": winner, "times": 1})
+    else:
+        # Find the user
+        res = winners.find_one({"name": winner})
+        times = res["times"]
+
+        # Update
+        winners.update_one(
+            {"name": winner}, {"$set": {"times": (times + 1)}})
+    # winners.insert_one({"name": winner, "game": game})
+
+
 def insert(giver, number, giveawayID):
     giveaways.insert_one(
         {"name": giver, "prizes": number, "giveawayID": giveawayID})
@@ -82,3 +99,4 @@ def delete():
     giveaways.delete_many({})
     db["users"].delete_many({})
     db["games"].delete_many({})
+    db["winners"].delete_many({})
