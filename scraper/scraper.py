@@ -4,8 +4,13 @@ import requests
 import config
 import mongodb
 
+DEBUG = True
+DEBUG_GIVEAWAYS = 2
+
 login = "https://metacouncil.com/login/login/"
 url = "https://metacouncil.com/giveaway/"
+postURL = "https://metacouncil.com/posts/"
+
 credentials = {
     'login': config.login,
     'password': config.password
@@ -25,6 +30,23 @@ def scrapeGiveaway(id):  # Get games from giveaway
         platform = cell[1].text.strip()
         mongodb.insertGame(game, platform)
 
+    # Check if giveaway is active
+    active = giveDoc.body.find(string="Enter Giveaway")
+
+    # Get winners if the giveaway has ended
+    if not active:
+        link = giveDoc.body.find(
+            "div", class_="p-title-pageAction").find_all("a")
+        # Get Post id
+        postID = link[0]["href"].split("/")[2]
+        giveawayURL = postURL + postID
+        postPage = s.get(giveawayURL)
+        postDoc = BeautifulSoup(postPage.text, "html.parser")
+        print(giveawayURL)
+        givePost = postDoc.body.find(
+            "article", id="js-post-" + postID).find("ul", class_="giveaway-bbCode--prizes")
+        print(givePost)
+
 
 # Delete old stuff
 mongodb.delete()
@@ -38,13 +60,15 @@ with requests.session() as s:
     doc = BeautifulSoup(startPage.text, "html.parser")
 
     # Get the number of pages
-    numPages = doc.body.find_all("li", class_="pageNav-page")
-    num = int(numPages[4].text.strip())
+    num = doc.body.find_all("li", class_="pageNav-page")
+    numPages = int(num[4].text.strip())
     i = 1
 
-    # num = 1  # temp variable, remove
+    if DEBUG == True:
+        numPages = 1  # Debugging, only check first page
+
     # Loop through all the pages
-    while i <= num:
+    while i <= numPages:
         givePage = s.get(url + "?page=" + str(i))
         giveDoc = BeautifulSoup(givePage.text, "html.parser")
 
@@ -70,7 +94,10 @@ with requests.session() as s:
             mongodb.insert(giveaway['data-author'],
                            prize.split(" ")[0], int(id))
 
-            # break
+            if DEBUG == True:
+                DEBUG_GIVEAWAYS -= 1
+                if DEBUG_GIVEAWAYS == 0:
+                    break
         i = i + 1
 
 mongodb.process()
