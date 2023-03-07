@@ -20,4 +20,8 @@ app.use("/giveaways", giveawaysRouter);
 
 const gamesRouter = require("./routes/games");
 app.use("/games", gamesRouter);
+
+const winnersRouter = require("./routes/winners");
+app.use("/winners", winnersRouter);
+
 app.listen(PORT, () => console.log("Server has started"));
