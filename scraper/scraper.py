@@ -17,7 +17,7 @@ credentials = {
 }
 
 
-def getWinners(postID):
+def getWinners(postID, giveawayDate):
     giveawayURL = postURL + postID
     postPage = requests.get(giveawayURL)
     postDoc = BeautifulSoup(postPage.text, "html.parser")
@@ -26,13 +26,13 @@ def getWinners(postID):
     for givenGame in givenGames:
         list = givenGame.find_all("ul")
         # Retrieve winner
-        game = list[0].find_all("li")[0]  # .find("a")
+        game = list[0].find_all("li")[0].text.strip()  # .find("a")
         winner = list[0].find_all("li")[1].find("a").text.strip()
 
-        mongodb.insertWinner(winner)
+        mongodb.insertWinner(winner, game, giveawayDate)
 
 
-def scrapeGiveaway(id):  # Get games from giveaway
+def scrapeGiveaway(id, giveawayDate):  # Get games from giveaway
     givePage = s.get(url + str(id))
     giveDoc = BeautifulSoup(givePage.text, "html.parser")
     rows = giveDoc.body.find_all(
@@ -54,7 +54,7 @@ def scrapeGiveaway(id):  # Get games from giveaway
             "div", class_="p-title-pageAction").find_all("a")
         # Get Post id
         postID = link[0]["href"].split("/")[2]
-        getWinners(postID)
+        getWinners(postID, giveawayDate)
 
 
 # Delete old stuff
@@ -90,8 +90,10 @@ with requests.session() as s:
 
             # Get the ID from the link
             id = str(idLink).split("/")[2]
+            giveawayDate = giveaway.find("time", class_="u-dt")["data-time"]
+
             print(id)
-            scrapeGiveaway(id)
+            scrapeGiveaway(id, giveawayDate)
 
             # Get the number of prizes
             prizes = giveaway.find_all("span")
@@ -100,8 +102,11 @@ with requests.session() as s:
             # print(giveaway['data-author'])
 
             prize = prizes.text.strip()
-            mongodb.insert(giveaway['data-author'],
-                           prize.split(" ")[0], int(id))
+            giver = giveaway['data-author']
+            numGames = prize.split(" ")[0]
+            giveawayID = int(id)
+
+            mongodb.insert(giver, numGames, giveawayID, giveawayDate)
 
             if DEBUG == True:
                 DEBUG_GIVEAWAYS -= 1
