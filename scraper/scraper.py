@@ -103,6 +103,7 @@ with requests.session() as s:
 
             prize = prizes.text.strip()
             giver = giveaway['data-author']
+
             numGames = prize.split(" ")[0]
             giveawayID = int(id)
 

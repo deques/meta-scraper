@@ -78,7 +78,7 @@ def insertUser(user, add):
 
         # Update the entry
         numPrizes = users.update_one(
-            {"name": user}, {"$inc": {"given_games": int(add), "giveaways": (times + 1)}})
+            {"name": user}, {"$inc": {"given_games": int(add), "giveaways": 1}})
 
 
 def insertGame(game, platform):
