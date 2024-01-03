@@ -10,8 +10,12 @@ function App() {
       labels: data.map((user) => user.name),
       datasets: [
         {
-          label: "Given prizes",
-          data: data.map((user) => user.prizes)
+          label: "Won games",
+          data: data.map((user) => user.won_games)
+        },
+        {
+          label: "Given games",
+          data: data.map((user) => user.given_games)
         }
       ]
 

@@ -4,8 +4,8 @@ import requests
 import config
 import mongodb
 
-DEBUG = False
-DEBUG_GIVEAWAYS = 10
+DEBUG = True
+DEBUG_GIVEAWAYS = 3
 
 login = "https://metacouncil.com/login/login/"
 url = "https://metacouncil.com/giveaway/"
@@ -16,46 +16,92 @@ credentials = {
     'password': config.password
 }
 
-
 def getWinners(postID, giveawayDate):
     giveawayURL = postURL + postID
     postPage = requests.get(giveawayURL)
     postDoc = BeautifulSoup(postPage.text, "html.parser")
     givenGames = postDoc.body.find(
         "article", id="js-post-" + postID).find_all("li", class_="is-delivered")
+    games = []
     for givenGame in givenGames:
         list = givenGame.find_all("ul")
         # Retrieve winner
         game = list[0].find_all("li")[0].text.strip()  # .find("a")
         winner = list[0].find_all("li")[1].find("a").text.strip()
-
+        games.append([game, winner])
+        #games.append("{'game' : " + game + ", 'winner' : " + winner + "}")
         mongodb.insertWinner(winner, game, giveawayDate)
 
+    return games
 
-def scrapeGiveaway(id, giveawayDate):  # Get games from giveaway
+# Get games from giveaway
+def scrapeGiveaway(id, giveawayDate):  
     givePage = s.get(url + str(id))
     giveDoc = BeautifulSoup(givePage.text, "html.parser")
+
+    #Check first row to see if it's a code column or not
+    firstRow = giveDoc.body.find("tr", class_="dataList-row")
+    cell = firstRow.find_all("td")
+    col = 1
+    if cell[1].text.strip() == "Code":
+        col = 2
+
     rows = giveDoc.body.find_all(
         "tr", class_="dataList-row")[1:]
 
+    games = []
     for row in rows:
         cell = row.find_all("td")
 
         game = cell[0].text.strip()
-        platform = cell[1].text.strip()
+        platform = cell[col].text.strip()
         mongodb.insertGame(game, platform)
+        #games.append(game)
 
     # Check if giveaway is active
-    active = giveDoc.body.find(string="Enter Giveaway")
-
+    #active = giveDoc.body.find(string="Enter Giveaway")
+    active = giveDoc.body.find(
+        "div", class_="giveaway-bbCode--countdown")
+    if active:
+        print("abort")
+        return games
     # Get winners if the giveaway has ended
-    if not active:
-        link = giveDoc.body.find(
-            "div", class_="p-title-pageAction").find_all("a")
-        # Get Post id
-        postID = link[0]["href"].split("/")[2]
-        getWinners(postID, giveawayDate)
+    #if not active:
+    link = giveDoc.body.find(
+        "div", class_="p-title-pageAction").find_all("a")
+    # Get Post id
+    postID = link[0]["href"].split("/")[2]
+    games = getWinners(postID, giveawayDate)
+    return games
 
+#Get giveaway post
+def getPost(giveaway):
+    # Find link to the giveaway
+    idLink = giveaway.find(
+        "div", class_="structItem-title").find("a")
+
+    # Get the ID from the link
+    id = str(idLink).split("/")[2]
+    giveawayDate = giveaway.find("time", class_="u-dt")["data-time"]
+
+    #if id != "643":
+    #    return
+
+    print(id)
+    games = scrapeGiveaway(id, giveawayDate)
+    # Get the number of prizes
+    prizes = giveaway.find_all("span")
+    prizes = giveaway.find(
+        "ul", class_="structItem-parts").find_all("li")[2].find("span")
+    # print(giveaway['data-author'])
+
+    prize = prizes.text.strip()
+    giver = giveaway['data-author']
+
+    numGames = prize.split(" ")[0]
+    giveawayID = int(id)
+
+    mongodb.insert(giver, numGames, giveawayID, giveawayDate, games)
 
 # Delete old stuff
 mongodb.delete()
@@ -84,30 +130,7 @@ with requests.session() as s:
         giveaways = giveDoc.body.find_all("div", class_="structItem--giveaway")
 
         for giveaway in giveaways:
-            # Find link to the giveaway
-            idLink = giveaway.find(
-                "div", class_="structItem-title").find("a")
-
-            # Get the ID from the link
-            id = str(idLink).split("/")[2]
-            giveawayDate = giveaway.find("time", class_="u-dt")["data-time"]
-
-            print(id)
-            scrapeGiveaway(id, giveawayDate)
-
-            # Get the number of prizes
-            prizes = giveaway.find_all("span")
-            prizes = giveaway.find(
-                "ul", class_="structItem-parts").find_all("li")[2].find("span")
-            # print(giveaway['data-author'])
-
-            prize = prizes.text.strip()
-            giver = giveaway['data-author']
-
-            numGames = prize.split(" ")[0]
-            giveawayID = int(id)
-
-            mongodb.insert(giver, numGames, giveawayID, giveawayDate)
+            getPost(giveaway)
 
             if DEBUG == True:
                 DEBUG_GIVEAWAYS -= 1

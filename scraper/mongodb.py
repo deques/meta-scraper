@@ -1,6 +1,8 @@
 import pymongo
 from pymongo import MongoClient
 import datetime
+import json
+
 dbString = "mongodb://localhost:27017"
 client = MongoClient(dbString)
 
@@ -44,22 +46,20 @@ def insertWinner(winner, game, giveawayDate):
         winners.update_one(
             {"name": winner}, {"$set": {"won_games": (times + 1)}})
 
-
-def insert(giver, number, giveawayID, giveawayDate):
+def insert(giver, number, giveawayID, giveawayDate, games):
     giveaways = db["meta-giveaway"]
+    print(games)
     giveaways.insert_one(
-        {"name": giver, "given_games": number, "giveawayID": giveawayID, "give_date": giveawayDate})
-
+        {"name": giver, "given_games": number, "giveawayID": giveawayID, "give_date": giveawayDate, "games": games})
 
 def insertUser(user, add):
-
     users = db["users"]
     count = users.count_documents({"name": user})
 
     # Add new entry
     if count == 0:
         count = users.insert_one(
-            {"name": user, "given_games": int(add), "giveaways": 1})
+            {"name": user, "won_games": 0, "given_games": int(add), "giveaways": 1})
     # Increase the number
     else:
         # Find the user
@@ -82,7 +82,7 @@ def insertUser(user, add):
 
 
 def insertGame(game, platform):
-    game = game.lower()
+    #game = game.lower()
     games = db["games"]
     count = games.count_documents({"name": game, "platform": platform})
 

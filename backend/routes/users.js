@@ -11,7 +11,7 @@ router.get("/", async (req, res) => {
     //.limit(25); // Remove this line to see all givers
     res.json(games);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "err.message" });
   }
 });
 
