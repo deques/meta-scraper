@@ -5,7 +5,7 @@ import config
 import mongodb
 
 DEBUG = True
-DEBUG_GIVEAWAYS = 3
+DEBUG_GIVEAWAYS = 2
 
 login = "https://metacouncil.com/login/login/"
 url = "https://metacouncil.com/giveaway/"
@@ -20,8 +20,16 @@ def getWinners(postID, giveawayDate):
     giveawayURL = postURL + postID
     postPage = requests.get(giveawayURL)
     postDoc = BeautifulSoup(postPage.text, "html.parser")
+
+    #Check if giveaway has ended yet, abort if not ended
+    active = postDoc.body.find("article", id="js-post-" + postID).find("div", class_="giveaway-bbCode--countdown")
+    if active:
+        print("Not ended yet")
+        return []
+
+    #Find all games in the giveaway and winners if any
     givenGames = postDoc.body.find(
-        "article", id="js-post-" + postID).find_all("li", class_="is-delivered")
+        "article", id="js-post-" + postID).find_all("li", class_="giveaway-bbCode--prizeItem")
     games = []
     for givenGame in givenGames:
         list = givenGame.find_all("ul")
@@ -61,11 +69,11 @@ def scrapeGiveaway(id, giveawayDate):
 
     # Check if giveaway is active
     #active = giveDoc.body.find(string="Enter Giveaway")
-    active = giveDoc.body.find(
-        "div", class_="giveaway-bbCode--countdown")
-    if active:
-        print("abort")
-        return games
+    #active = giveDoc.body.find("div", class_="giveaway-bbCode--countdown")
+    #print(active)
+    #if active:
+    #    print("abort")
+    #    return games
     # Get winners if the giveaway has ended
     #if not active:
     link = giveDoc.body.find(

@@ -48,7 +48,6 @@ def insertWinner(winner, game, giveawayDate):
 
 def insert(giver, number, giveawayID, giveawayDate, games):
     giveaways = db["meta-giveaway"]
-    print(games)
     giveaways.insert_one(
         {"name": giver, "given_games": number, "giveawayID": giveawayID, "give_date": giveawayDate, "games": games})
 
