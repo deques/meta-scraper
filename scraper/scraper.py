@@ -28,7 +28,8 @@ def getWinners(postID, giveawayDate):
         # Retrieve winner
         game = list[0].find_all("li")[0].text.strip()  # .find("a")
         winner = list[0].find_all("li")[1].find("a").text.strip()
-        games.append([game, winner])
+        #games.append([game, winner])
+        games.append({"game" : game, "winner" : winner})
         #games.append("{'game' : " + game + ", 'winner' : " + winner + "}")
         mongodb.insertWinner(winner, game, giveawayDate)
 
