@@ -16,6 +16,9 @@ credentials = {
     'password': config.password
 }
 
+startFrom = 427
+DELETE = False
+
 def getWinners(postID, giveawayDate):
     giveawayURL = postURL + postID
     postPage = requests.get(giveawayURL)
@@ -87,6 +90,9 @@ def getPost(giveaway):
 
     # Get the ID from the link
     id = str(idLink).split("/")[2]
+    if int(id) > startFrom:
+        return
+    
     giveawayDate = int(giveaway.find("time", class_="u-dt")["data-time"])
 
     #if id != "643":
@@ -109,7 +115,8 @@ def getPost(giveaway):
     mongodb.insert(giver, numGames, giveawayID, giveawayDate, games)
 
 # Delete old stuff
-mongodb.delete()
+if DELETE == True:
+    mongodb.delete()
 
 # Login
 with requests.session() as s:
