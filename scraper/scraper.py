@@ -4,7 +4,7 @@ import requests
 import config
 import mongodb
 
-DEBUG = True
+DEBUG = False
 DEBUG_GIVEAWAYS = 3
 
 login = "https://metacouncil.com/login/login/"
@@ -71,17 +71,7 @@ def scrapeGiveaway(id, giveawayDate):
         game = cell[0].text.strip()
         platform = cell[col].text.strip()
         mongodb.insertGame(game, platform)
-        #games.append(game)
 
-    # Check if giveaway is active
-    #active = giveDoc.body.find(string="Enter Giveaway")
-    #active = giveDoc.body.find("div", class_="giveaway-bbCode--countdown")
-    #print(active)
-    #if active:
-    #    print("abort")
-    #    return games
-    # Get winners if the giveaway has ended
-    #if not active:
     link = giveDoc.body.find(
         "div", class_="p-title-pageAction").find_all("a")
     # Get Post id
@@ -97,7 +87,7 @@ def getPost(giveaway):
 
     # Get the ID from the link
     id = str(idLink).split("/")[2]
-    giveawayDate = giveaway.find("time", class_="u-dt")["data-time"]
+    giveawayDate = int(giveaway.find("time", class_="u-dt")["data-time"])
 
     #if id != "643":
     #    return
@@ -113,7 +103,7 @@ def getPost(giveaway):
     prize = prizes.text.strip()
     giver = giveaway['data-author']
 
-    numGames = prize.split(" ")[0]
+    numGames = int(prize.split(" ")[0])
     giveawayID = int(id)
 
     mongodb.insert(giver, numGames, giveawayID, giveawayDate, games)
