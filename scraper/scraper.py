@@ -5,7 +5,7 @@ import config
 import mongodb
 
 DEBUG = True
-DEBUG_GIVEAWAYS = 2
+DEBUG_GIVEAWAYS = 3
 
 login = "https://metacouncil.com/login/login/"
 url = "https://metacouncil.com/giveaway/"
@@ -33,9 +33,15 @@ def getWinners(postID, giveawayDate):
     games = []
     for givenGame in givenGames:
         list = givenGame.find_all("ul")
-        # Retrieve winner
+
+        # Retrieve game and winner
+        num = len(list[0].find_all("li"))
         game = list[0].find_all("li")[0].text.strip()  # .find("a")
-        winner = list[0].find_all("li")[1].find("a").text.strip()
+        if num > 2:
+            winner = list[0].find_all("li")[1].find("a").text.strip()
+        else:
+            winner = "NONE"
+        
         #games.append([game, winner])
         games.append({"game" : game, "winner" : winner})
         #games.append("{'game' : " + game + ", 'winner' : " + winner + "}")
